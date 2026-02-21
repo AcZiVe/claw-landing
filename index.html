@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claw AI - Dein KI-Mitarbeiter</title>
+    <meta name="description" content="Claw ist dein persoenlicher KI-Mitarbeiter. Emails, Akquise, Tagesplanung, Code Review - automatisiert und persoenlich konfiguriert.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --border: #1e1e2e;
+            --cyan: #00d4ff;
+            --cyan-glow: rgba(0, 212, 255, 0.15);
+            --text: #e4e4e7;
+            --text-muted: #71717a;
+            --white: #fafafa;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Glow background */
+        .bg-glow {
+            position: fixed;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 600px;
+            background: radial-gradient(ellipse, var(--cyan-glow), transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Nav */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 1rem 2rem;
+            backdrop-filter: blur(20px);
+            background: rgba(10, 10, 15, 0.8);
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav .inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--white);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo span { color: var(--cyan); }
+
+        nav a.cta-nav {
+            padding: 0.5rem 1.2rem;
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        nav a.cta-nav:hover {
+            background: var(--cyan);
+            color: var(--bg);
+        }
+
+        /* Hero */
+        .hero {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 10rem 2rem 6rem;
+            text-align: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background: var(--cyan-glow);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 100px;
+            font-size: 0.85rem;
+            color: var(--cyan);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            color: var(--white);
+            margin-bottom: 1.5rem;
+        }
+
+        h1 .highlight {
+            background: linear-gradient(135deg, var(--cyan), #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+        }
+
+        /* Waitlist Form */
+        .waitlist-form {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 480px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .waitlist-form input {
+            flex: 1;
+            min-width: 250px;
+            padding: 0.9rem 1.2rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--white);
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .waitlist-form input:focus {
+            border-color: var(--cyan);
+        }
+
+        .waitlist-form input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn-primary {
+            padding: 0.9rem 2rem;
+            background: var(--cyan);
+            color: var(--bg);
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-primary:hover {
+            background: #00bce6;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .form-note {
+            width: 100%;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .form-success {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+            color: var(--cyan);
+            font-weight: 500;
+        }
+
+        /* Features */
+        .features {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 4rem 2rem 6rem;
+        }
+
+        .features h2 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 3rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(0, 212, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--cyan-glow);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 0.6rem;
+        }
+
+        .feature-card p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Pricing */
+        .pricing {
+            position: relative;
+            z-index: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 4rem 2rem 6rem;
+        }
+
+        .pricing h2 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 1rem;
+        }
+
+        .pricing .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .price-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .price-card.popular {
+            border-color: var(--cyan);
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.1);
+        }
+
+        .price-card.popular::before {
+            content: 'Beliebt';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--cyan);
+            color: var(--bg);
+            padding: 0.25rem 1rem;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .price-card h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 1rem;
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--white);
+        }
+
+        .price span {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+
+        .price-features {
+            list-style: none;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .price-features li {
+            padding: 0.5rem 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .price-features li::before {
+            content: '\2713';
+            color: var(--cyan);
+            font-weight: 700;
+        }
+
+        .btn-outline {
+            display: inline-block;
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid var(--border);
+            color: var(--text);
+            background: transparent;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            font-family: inherit;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--cyan);
+            color: var(--cyan);
+        }
+
+        .price-card.popular .btn-outline {
+            background: var(--cyan);
+            color: var(--bg);
+            border-color: var(--cyan);
+        }
+
+        /* How it works */
+        .how {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 2rem 6rem;
+        }
+
+        .how h2 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 3rem;
+        }
+
+        .step {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            min-width: 48px;
+            height: 48px;
+            background: var(--cyan-glow);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--cyan);
+            font-size: 1.2rem;
+        }
+
+        .step-text h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--white);
+            margin-bottom: 0.3rem;
+        }
+
+        .step-text p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        footer {
+            position: relative;
+            z-index: 1;
+            border-top: 1px solid var(--border);
+            padding: 3rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: var(--cyan);
+            text-decoration: none;
+        }
+
+        /* Terminal animation */
+        .terminal {
+            max-width: 600px;
+            margin: 4rem auto 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            display: flex;
+            gap: 6px;
+            padding: 0.8rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: #ff5f57; }
+        .terminal-dot.yellow { background: #ffbd2e; }
+        .terminal-dot.green { background: #28c840; }
+
+        .terminal-body {
+            padding: 1.2rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            line-height: 1.8;
+            min-height: 180px;
+        }
+
+        .terminal-line {
+            opacity: 0;
+            animation: fadeIn 0.3s forwards;
+        }
+
+        .terminal-line .prompt { color: var(--cyan); }
+        .terminal-line .cmd { color: var(--white); }
+        .terminal-line .output { color: var(--text-muted); }
+        .terminal-line .success { color: #28c840; }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .hero { padding: 8rem 1.5rem 4rem; }
+            .features, .pricing, .how { padding: 3rem 1.5rem; }
+            .pricing-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <nav>
+        <div class="inner">
+            <a href="#" class="logo">Claw <span>AI</span></a>
+            <a href="#waitlist" class="cta-nav">Auf die Warteliste</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="badge">Bald verfuegbar</div>
+        <h1>Dein persoenlicher <span class="highlight">KI-Mitarbeiter</span></h1>
+        <p>Claw arbeitet 24/7 fuer dich. Emails beantworten, Kunden akquirieren, Tagesplaene erstellen, Code reviewen — automatisiert und persoenlich konfiguriert.</p>
+
+        <div id="waitlist">
+            <form class="waitlist-form" id="waitlistForm">
+                <input type="email" placeholder="deine@email.de" required id="emailInput">
+                <button type="submit" class="btn-primary">Platz sichern</button>
+                <p class="form-note">Kostenlos. Kein Spam. Du bist unter den Ersten.</p>
+            </form>
+            <div class="form-success" id="formSuccess">
+                Du bist auf der Warteliste! Wir melden uns.
+            </div>
+        </div>
+
+        <div class="terminal">
+            <div class="terminal-header">
+                <div class="terminal-dot red"></div>
+                <div class="terminal-dot yellow"></div>
+                <div class="terminal-dot green"></div>
+            </div>
+            <div class="terminal-body" id="terminalBody"></div>
+        </div>
+    </section>
+
+    <section class="features">
+        <h2>Was Claw fuer dich macht</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">&#x2709;</div>
+                <h3>Email-Management</h3>
+                <p>Claw liest deine Emails, schreibt professionelle Antworten und wartet auf deine Freigabe. Kein Spam, kein Durcheinander.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4C8;</div>
+                <h3>Kunden-Akquise</h3>
+                <p>Findet automatisch potenzielle Kunden, analysiert deren Websites und schreibt personalisierte Kaltakquise-Mails.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4CB;</div>
+                <h3>Tagesplanung</h3>
+                <p>Jeden Morgen bekommst du deinen Tagesplan per Telegram. Angepasst an deinen Rhythmus, deine Ziele, deine Prioritaeten.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F4BB;</div>
+                <h3>Code Review</h3>
+                <p>Reviewed deinen Code, findet Bugs, schlaegt Verbesserungen vor. Arbeitet mit Claude Code und anderen Tools zusammen.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F50D;</div>
+                <h3>Web-Recherche</h3>
+                <p>Recherchiert Maerkte, analysiert Konkurrenz, findet Trends. Liefert dir fertige Zusammenfassungen statt endlosem Googlen.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">&#x1F916;</div>
+                <h3>Immer verfuegbar</h3>
+                <p>Claw laeuft 24/7. Per Telegram erreichbar, auch vom Handy. Reagiert sofort, vergisst nichts, arbeitet auch wenn du schlafst.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="how">
+        <h2>So funktioniert's</h2>
+        <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-text">
+                <h3>Einrichtung in 30 Minuten</h3>
+                <p>Wir konfigurieren Claw fuer dich. Telegram verbinden, Email anbinden, Arbeitsrhythmus einstellen.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-text">
+                <h3>Claw lernt dich kennen</h3>
+                <p>Deine Projekte, deine Kunden, dein Stil. Claw wird immer besser je laenger ihr zusammenarbeitet.</p>
+            </div>
+        </div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-text">
+                <h3>Du arbeitest, Claw unterstuetzt</h3>
+                <p>Morgen-Briefing, Email-Drafts, Akquise, Recherche — alles automatisch. Du genehmigst nur noch.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing">
+        <h2>Einfache Preise</h2>
+        <p class="subtitle">Kein Vertrag. Jederzeit kuendbar.</p>
+        <div class="pricing-grid">
+            <div class="price-card">
+                <h3>Starter</h3>
+                <div class="price">49&euro;<span>/Mo</span></div>
+                <ul class="price-features">
+                    <li>Email-Management</li>
+                    <li>Tagesplanung per Telegram</li>
+                    <li>Web-Recherche</li>
+                    <li>1 Projekt</li>
+                </ul>
+                <a href="#waitlist" class="btn-outline">Warteliste</a>
+            </div>
+            <div class="price-card popular">
+                <h3>Pro</h3>
+                <div class="price">99&euro;<span>/Mo</span></div>
+                <ul class="price-features">
+                    <li>Alles aus Starter</li>
+                    <li>Kunden-Akquise</li>
+                    <li>Social Media Monitoring</li>
+                    <li>3 Projekte</li>
+                    <li>Prioritaets-Support</li>
+                </ul>
+                <a href="#waitlist" class="btn-outline">Warteliste</a>
+            </div>
+            <div class="price-card">
+                <h3>Business</h3>
+                <div class="price">199&euro;<span>/Mo</span></div>
+                <ul class="price-features">
+                    <li>Alles aus Pro</li>
+                    <li>Code Review &amp; Deployment</li>
+                    <li>Projekt-Management</li>
+                    <li>Unbegrenzte Projekte</li>
+                    <li>Custom Integrationen</li>
+                </ul>
+                <a href="#waitlist" class="btn-outline">Warteliste</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>Claw AI &mdash; Gebaut von <a href="https://falcontechsolutions.de" target="_blank">FalconTech Solutions</a></p>
+        <p style="margin-top: 0.5rem;">Made with code, coffee, and a lobster.</p>
+    </footer>
+
+    <script>
+        // Terminal animation
+        const lines = [
+            { type: 'prompt', text: '$ ', cmd: 'claw status' },
+            { type: 'output', text: '  3 neue Emails, 1 dringend' },
+            { type: 'success', text: '  KI-Draft erstellt, wartet auf Freigabe' },
+            { type: 'output', text: '' },
+            { type: 'prompt', text: '$ ', cmd: 'claw plan heute' },
+            { type: 'output', text: '  09:00  Deep Work: Lokio Features' },
+            { type: 'output', text: '  12:00  Email an Neukunden senden' },
+            { type: 'success', text: '  14:00  Code Review: PR #42' },
+            { type: 'output', text: '' },
+            { type: 'prompt', text: '$ ', cmd: 'claw akquise --start' },
+            { type: 'success', text: '  3 Firmen gefunden, Mails in Queue' },
+        ];
+
+        const terminal = document.getElementById('terminalBody');
+        let delay = 500;
+
+        lines.forEach((line, i) => {
+            setTimeout(() => {
+                const el = document.createElement('div');
+                el.className = 'terminal-line';
+                el.style.animationDelay = '0s';
+
+                if (line.type === 'prompt') {
+                    el.innerHTML = `<span class="prompt">${line.text}</span><span class="cmd">${line.cmd}</span>`;
+                } else if (line.type === 'success') {
+                    el.innerHTML = `<span class="success">${line.text}</span>`;
+                } else {
+                    el.innerHTML = `<span class="output">${line.text}</span>`;
+                }
+
+                terminal.appendChild(el);
+                terminal.scrollTop = terminal.scrollHeight;
+            }, delay);
+            delay += line.type === 'prompt' ? 800 : 400;
+        });
+
+        // Waitlist form
+        document.getElementById('waitlistForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
+
+            // Store in localStorage for now (no backend yet)
+            const waitlist = JSON.parse(localStorage.getItem('claw-waitlist') || '[]');
+            waitlist.push({ email, date: new Date().toISOString() });
+            localStorage.setItem('claw-waitlist', JSON.stringify(waitlist));
+
+            document.getElementById('waitlistForm').style.display = 'none';
+            document.getElementById('formSuccess').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
